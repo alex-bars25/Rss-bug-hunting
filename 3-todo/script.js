@@ -34,12 +34,16 @@ function deleteTask(id) {
 }
 
 function clearCompleted() {
-  tasks = [];
+  tasks = tasks.filter((t) => !t.done);
   render();
 }
 
 function getVisibleTasks() {
-  return tasks;
+  switch (currentFilter) {
+    case 'all': return tasks;
+    case 'active': return tasks.filter((t) => !t.done);
+    case 'done': return tasks.filter((t) => t.done);
+  }
 }
 
 function updateCounter() {
@@ -82,6 +86,7 @@ filterButtons.forEach((btn) => {
     filterButtons.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     currentFilter = btn.dataset.filter;
+
     render();
   });
 });
