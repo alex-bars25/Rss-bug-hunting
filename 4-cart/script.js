@@ -40,6 +40,7 @@ function addToCart(id) {
     cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
   } else {
     item.qty++;
+    item.price = updatePrice(item);
   }
   renderCart();
 }
@@ -47,14 +48,22 @@ function addToCart(id) {
 function increaseQty(id) {
   const item = cart.find((i) => i.id === id);
   item.qty++;
+  item.price = updatePrice(item);
   renderCart();
 }
 
 function decreaseQty(id) {
   const item = cart.find((i) => i.id === id);
   item.qty > 1 ? item.qty-- : 1;
+  item.price = updatePrice(item);
   renderCart();
 }
+
+function updatePrice(item) {
+  const price = products.find((p) => p.id === item.id).price;
+  return price * item.qty;
+}
+
 
 function removeItem(id) {
   cart = cart.filter((i) => i.id !== id);
@@ -75,7 +84,7 @@ function clearCart() {
 
 function renderCart() {
   cartItemsEl.innerHTML = "";
-  let total = "";
+  let total = 0;
   cart.forEach((item) => {
     const lineTotal = item.price;
     const li = document.createElement("li");
@@ -90,7 +99,7 @@ function renderCart() {
     li.querySelector('[data-act="dec"]').addEventListener("click", () => decreaseQty(item.id));
     li.querySelector(".remove").addEventListener("click", () => removeItem(item.id));
     cartItemsEl.appendChild(li);
-    total += item.price * item.qty;
+    total += updatePrice(item);
   });
 
   if (discount) {
