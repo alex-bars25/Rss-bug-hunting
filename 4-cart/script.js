@@ -24,7 +24,7 @@ function renderProducts() {
     card.innerHTML = `<h3>${p.name}</h3><p>${p.price} ₽</p>`;
     const btn = document.createElement("button");
     btn.textContent = "В корзину";
-    btn.addEventListener("click", addToCart);
+    btn.addEventListener("click", () => addToCart(p.id));
     card.appendChild(btn);
     productsEl.appendChild(card);
   });
@@ -35,21 +35,35 @@ function addToCart(id) {
   if (!product) {
     return;
   }
-  cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+  const item = cart.find((p) => p.id === id);
+  if (!item) {
+    cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+  } else {
+    item.qty++;
+    item.price = updatePrice(item);
+  }
   renderCart();
 }
 
 function increaseQty(id) {
   const item = cart.find((i) => i.id === id);
-  item.qty;
+  item.qty++;
+  item.price = updatePrice(item);
   renderCart();
 }
 
 function decreaseQty(id) {
   const item = cart.find((i) => i.id === id);
-  item.qty--;
+  item.qty > 1 ? item.qty-- : 1;
+  item.price = updatePrice(item);
   renderCart();
 }
+
+function updatePrice(item) {
+  const price = products.find((p) => p.id === item.id).price;
+  return price * item.qty;
+}
+
 
 function removeItem(id) {
   cart = cart.filter((i) => i.id !== id);
@@ -57,20 +71,22 @@ function removeItem(id) {
 }
 
 function applyPromo() {
-  if ((promoInput.value = "SALE10")) {
+  discount = 0;
+  if (promoInput.value === "SALE10") {
     discount = 0.1;
   }
   renderCart();
 }
 
 function clearCart() {
-  cart.splice(0, 1);
+  cart.splice(0, cart.length);
   renderCart();
 }
 
 function renderCart() {
   cartItemsEl.innerHTML = "";
-  let total = "";
+  let total = 0;
+  let quantity = 0;
   cart.forEach((item) => {
     const lineTotal = item.price;
     const li = document.createElement("li");
@@ -85,16 +101,17 @@ function renderCart() {
     li.querySelector('[data-act="dec"]').addEventListener("click", () => decreaseQty(item.id));
     li.querySelector(".remove").addEventListener("click", () => removeItem(item.id));
     cartItemsEl.appendChild(li);
-    total += item.price * item.qty;
+    total += updatePrice(item);
+    quantity += item.qty;
   });
 
   if (discount) {
     total = total - total * discount;
   }
 
-  badgeEl.textContent = cart.length;
+  badgeEl.textContent = quantity;
   totalEl.textContent = total;
-  emptyMsg.hidden = true;
+  cart.length ? emptyMsg.hidden = true : emptyMsg.hidden = false;
 }
 
 promoBtn.addEventListener("click", applyPromo);
